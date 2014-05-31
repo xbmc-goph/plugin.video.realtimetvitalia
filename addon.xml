@@ -14,11 +14,11 @@
   <extension point="xbmc.addon.metadata">
 	<platform>all</platform>
   	<language>it</language>
-    <summary lang="it">Guarda i video da www.realtimetv.it</summary>
-	<summary lang="en">Watch videos www.realtimetv.it</summary>
-    <description lang="it">Visualizza i programmi e gli episodi completi dal sito www.realtimetv.it</description>
-	<description lang="en">Watch the shows and completed episodes from the website www.realtimetv.it</description>
-	<forum>http://forum.xbmc.org/showthread.php?tid=</forum>
+    <summary lang="it">Guarda i video da www.realtime.it</summary>
+	<summary lang="en">Watch videos from www.realtime.it</summary>
+    <description lang="it">Visualizza i programmi e gli episodi completi dal sito www.realtime.it</description>
+	<description lang="en">Watch the shows and the complete episodes from the website www.realtime.it</description>
+	<forum>http://forum.xbmc.org/showthread.php?tid=196642</forum>
     <website>https://github.com/xbmc-goph/plugin.video.realtimetvitalia</website>
     <email></email>
     <source></source>
