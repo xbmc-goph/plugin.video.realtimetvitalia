@@ -148,6 +148,8 @@ def watchEpisode(link):
 	soup = BeautifulSoup(page)
 	videoID = soup.find('param', {'name': '@videoPlayer'})['value']
 	playBrightCoveStream(videoID)
+	xbmc.sleep(4000)
+	xbmc.executebuiltin('XBMC.PlayerControl(Play)')
 
 def playBrightCoveStream(videoID):
 	playerID = const_playerID
