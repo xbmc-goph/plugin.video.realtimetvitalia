@@ -53,7 +53,6 @@ def getSearchParameters():
 	page = loadPage(urlSearchParameters)
 	soup = BeautifulSoup(page)
 	search_parameters = soup.find('ul', {'id': 'video-section-list'}).findAll('li','last-child')
-	print search_parameters
 	for parameter in search_parameters:
 		parameter_label = parameter.find('strong').string
 		parameter_link = parameter.find('a')['href']
@@ -66,7 +65,6 @@ def	getShows(link):
 	page = loadPage(baseUrl + link)
 	soup = BeautifulSoup(page)
 	search_from = soup.findAll('ol', {'class': 'letter-a'})
-	print search_from
 	for search_item in search_from:
 		search_list = search_item.findAll('li')
 		for item in search_list:
@@ -94,7 +92,6 @@ def getShowThumbnail(link):
 		show_thumbnail = baseUrl + show_banner
 	except:
 		show_thumbnail = "None"
-	print show_thumbnail
 	return show_thumbnail
 
 def getEpisodes(link):
@@ -108,7 +105,6 @@ def getEpisodes(link):
 		episode_link = parsed_link[0] + parsed_link[1] + parsed_link[2] + previousPage['href']
 		addDirectoryItem("Precedenti", episode_link, "previous_page", "")
 	episodes_containers_list = soup.findAll('dl', {'class': re.compile(' item item-')})
-	print episodes_containers_list
 	for episode_container in episodes_containers_list:
 		episode_title = episode_container.find('dd',{'class': 'thumbnail'}).find('a')['title']
 		try:
@@ -120,22 +116,18 @@ def getEpisodes(link):
 		except:
 			episode_part = ""
 		episode_link = episode_container.find('dd',{'class': 'thumbnail'}).find('a')['href']
-		print episode_link
 		episode_thumbnail = episode_container.find('dd',{'class': 'thumbnail'}).find('a').find('img')['src']
-		print episode_thumbnail
 		try:
 			episode_description = episode_container.find('dd',{'class': 'extended-info'}).find('dl').find('dd',{'class': 'summary'}).string
 		except:
 			episode_description = "None"
 		try:
 			episode_duration_str = re.match('\((\d{2}:\d{2})\)', episode_container.find('dd',{'class': 'duration'}).string)
-			print episode_duration_str
 			split_duration = episode_duration_str.group(1).split(':')
 			duration_in_seconds = int(split_duration[0])*60+int(split_duration[1])
 			episode_duration = duration_in_seconds
 		except:
 			episode_duration = 0
-		print episode_duration
 		addLinkItem(episode_title + " " + episode_number + " " + episode_part, episode_link, "episode", episode_thumbnail, episode_description, episode_duration)
 	if nextPage is not None:
 		parsed_link = urlparse.urlparse(link)
