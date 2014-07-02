@@ -1,4 +1,4 @@
-1.0.2 (2914-07-02)
+1.0.2 (2014-07-02)
 Fixed errors in parsing video information
 
 1.0.1 (2014-06-03)
