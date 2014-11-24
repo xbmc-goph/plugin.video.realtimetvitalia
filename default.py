@@ -125,11 +125,13 @@ def watchEpisode(link):
 	page = loadPage(baseUrl + link)
 	soup = BeautifulSoup(page)
 	videoID = soup.find('param', {'name': '@videoPlayer'})['value']
-	playBrightCoveStream(videoID)
+	vidurl = getBrightCoveLink(videoID)
+	listItem = xbmcgui.ListItem(path=vidurl)
+	xbmcplugin.setResolvedUrl(thisPlugin, True, listItem)
 	xbmc.sleep(4000)
 	xbmc.executebuiltin('XBMC.PlayerControl(Play)')
 
-def playBrightCoveStream(videoID):
+def getBrightCoveLink(videoID):
 	playerID = const_playerID
 	publisherID = const_publisherID
 	const = const_str
@@ -145,12 +147,11 @@ def playBrightCoveStream(videoID):
 		if encRate < maxBitRate:
 			streamUrl = item['defaultURL']
 	if streamUrl.find("http://") == 0:
-		listItem = xbmcgui.ListItem(path=streamUrl+"?videoId="+videoID+"&lineUpId=&pubId="+str(publisherID)+"&playerId="+str(playerID)+"&affiliateId=&v=&fp=&r=&g=")
+		return streamUrl+"?videoId="+videoID+"&lineUpId=&pubId="+str(publisherID)+"&playerId="+str(playerID)+"&affiliateId=&v=&fp=&r=&g="
 	else:
 		url = streamUrl[0:streamUrl.find("&")]
 		playpath = streamUrl[streamUrl.find("&")+1:]
-		listItem = xbmcgui.ListItem(path=url+"playpath="+playpath)
-	xbmcplugin.setResolvedUrl(thisPlugin, True, listItem)
+		return url+"playpath="+playpath
 
 def getParams():
     param = []
