@@ -95,12 +95,10 @@ def getEpisodes(link):
 			episode_number = episode_container.find('dd',{'class': 'description'}).string
 			if episode_number is None:
 				episode_number = ""
+			else:
+				episode_number = re.sub(r'(.*?)( \- Parte [0-9]+)(.*?)', r'\1', episode_number)
 		except:
 			episode_number = ""
-		try:
-			episode_part = episode_container.find('dd',{'class': 'part'}).string
-		except:
-			episode_part = ""
 		episode_link = episode_container.find('dd',{'class': 'thumbnail'}).find('a')['href']
 		episode_thumbnail = episode_container.find('dd',{'class': 'thumbnail'}).find('a').find('img')['src']
 		try:
@@ -114,7 +112,7 @@ def getEpisodes(link):
 			episode_duration = duration_in_seconds
 		except:
 			episode_duration = 0
-		addLinkItem(episode_title + " " + episode_number + " " + episode_part, episode_link, "episode", episode_thumbnail, episode_description, episode_duration)
+		addLinkItem(episode_title + episode_number, episode_link, "episode", episode_thumbnail, episode_description, episode_duration)
 	if nextPage is not None:
 		parsed_link = urlparse.urlparse(link)
 		episode_link = parsed_link[0] + parsed_link[1] + parsed_link[2] + nextPage['href']
