@@ -104,7 +104,7 @@ def getEpisodes(link):
 		episode_link = episode_container.find('dd',{'class': 'thumbnail'}).find('a')['href']
 		episode_thumbnail = episode_container.find('dd',{'class': 'thumbnail'}).find('a').find('img')['src']
 		try:
-			episode_description = episode_container.find('dd',{'class': 'extended-info'}).find('dl').find('dd',{'class': 'summary'}).string.encode('utf-8')
+			episode_description = episode_container.find('dd',{'class': 'extended-info'}).find('dl').find('dd',{'class': 'summary'}).string
 		except:
 			episode_description = "None"
 		try:
