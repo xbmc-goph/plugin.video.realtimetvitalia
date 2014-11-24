@@ -21,8 +21,14 @@ const_publisherID = 1265527910001;
 const_playerKey = "AQ~~,AAABJqdXbnE~,swSdm6mQzrHdUAncp0a9cwAjGy8zF2fs"
 maxBitRate = 5120000
 
+def log(msg, force = False):
+	if force:
+		xbmc.log((u'### [' + addonID + u'] - ' + msg).encode('utf-8'), level = xbmc.LOGNOTICE)
+	else:
+		xbmc.log((u'### [' + addonID + u'] - ' + msg).encode('utf-8'), level = xbmc.LOGDEBUG)
+
 def loadPage(url):
-	print "Load: " + url
+	log("Loading url: " + url)
 	req = urllib2.Request(url)
 	req.add_header('User-Agent', 'Mozilla/5.0 (Windows NT 6.1; rv:29.0) Gecko/20100101 Firefox/29.0')
 	response = urllib2.urlopen(req)
@@ -67,6 +73,7 @@ def	getShows(link):
 		for item in search_list:
 			item_title = item.find('a').string
 			item_link = item.find('a')['href']
+			log("Found program: " + item_title)
 			addDirectoryItem(item_title, item_link, "category", "")
 	xbmcplugin.addSortMethod(thisPlugin, xbmcplugin.SORT_METHOD_LABEL)
 	xbmcplugin.endOfDirectory(thisPlugin)
@@ -90,21 +97,18 @@ def getEpisodes(link):
 	episodes_containers_list = soup.findAll('dl', {'class': re.compile(' item item-')})
 	for episode_container in episodes_containers_list:
 		episode_title = episode_container.find('dd',{'class': 'thumbnail'}).find('a')['title']
-		xbmc.log(msg=episode_title)
 		try:
 			episode_number = episode_container.find('dd',{'class': 'description'}).string
 			if episode_number is None:
 				episode_number = ""
+			else:
+				episode_number = re.sub(r'(.*?)( \- Parte [0-9]+)(.*?)', r'\1', episode_number)
 		except:
 			episode_number = ""
-		try:
-			episode_part = episode_container.find('dd',{'class': 'part'}).string
-		except:
-			episode_part = ""
 		episode_link = episode_container.find('dd',{'class': 'thumbnail'}).find('a')['href']
 		episode_thumbnail = episode_container.find('dd',{'class': 'thumbnail'}).find('a').find('img')['src']
 		try:
-			episode_description = episode_container.find('dd',{'class': 'extended-info'}).find('dl').find('dd',{'class': 'summary'}).string.encode('utf-8')
+			episode_description = episode_container.find('dd',{'class': 'extended-info'}).find('dl').find('dd',{'class': 'summary'}).string
 		except:
 			episode_description = "None"
 		try:
@@ -114,7 +118,8 @@ def getEpisodes(link):
 			episode_duration = duration_in_seconds
 		except:
 			episode_duration = 0
-		addLinkItem(episode_title + " " + episode_number + " " + episode_part, episode_link, "episode", episode_thumbnail, episode_description, episode_duration)
+		log("Found episode: " + episode_title + episode_number)
+		addLinkItem(episode_title + episode_number, episode_link, "episode", episode_thumbnail, episode_description, episode_duration)
 	if nextPage is not None:
 		parsed_link = urlparse.urlparse(link)
 		episode_link = parsed_link[0] + parsed_link[1] + parsed_link[2] + nextPage['href']
@@ -124,12 +129,27 @@ def getEpisodes(link):
 def watchEpisode(link):
 	page = loadPage(baseUrl + link)
 	soup = BeautifulSoup(page)
-	videoID = soup.find('param', {'name': '@videoPlayer'})['value']
-	playBrightCoveStream(videoID)
+	parts_containers_list = soup.findAll('li', {'class': re.compile('item item-')})
+	if parts_containers_list and len(parts_containers_list)>0:
+		url = "stack://"
+		for part_container in parts_containers_list:
+			videoID = part_container.find('dd',{'class': 'brightcoveId'}).string
+			vidurl = getBrightCoveLink(videoID)
+			log("Found part. Adding to stack: " + vidurl)
+			url += vidurl.replace(",", ",,") + " , "
+		url = url[:-3]
+	else:
+		videoID = soup.find('param', {'name': '@videoPlayer'})['value']
+		url = getBrightCoveLink(videoID)
+		log("Found single url: " + url)
+		playlist.add(vidurl, listitem)
+	log("Playing: " + url)
+	listItem = xbmcgui.ListItem(path=url)
+	xbmcplugin.setResolvedUrl(thisPlugin, True, listItem)
 	xbmc.sleep(4000)
 	xbmc.executebuiltin('XBMC.PlayerControl(Play)')
 
-def playBrightCoveStream(videoID):
+def getBrightCoveLink(videoID):
 	playerID = const_playerID
 	publisherID = const_publisherID
 	const = const_str
@@ -145,12 +165,11 @@ def playBrightCoveStream(videoID):
 		if encRate < maxBitRate:
 			streamUrl = item['defaultURL']
 	if streamUrl.find("http://") == 0:
-		listItem = xbmcgui.ListItem(path=streamUrl+"?videoId="+videoID+"&lineUpId=&pubId="+str(publisherID)+"&playerId="+str(playerID)+"&affiliateId=&v=&fp=&r=&g=")
+		return streamUrl+"?videoId="+videoID+"&lineUpId=&pubId="+str(publisherID)+"&playerId="+str(playerID)+"&affiliateId=&v=&fp=&r=&g="
 	else:
 		url = streamUrl[0:streamUrl.find("&")]
 		playpath = streamUrl[streamUrl.find("&")+1:]
-		listItem = xbmcgui.ListItem(path=url+"playpath="+playpath)
-	xbmcplugin.setResolvedUrl(thisPlugin, True, listItem)
+		return url+"playpath="+playpath
 
 def getParams():
     param = []
