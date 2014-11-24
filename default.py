@@ -21,8 +21,14 @@ const_publisherID = 1265527910001;
 const_playerKey = "AQ~~,AAABJqdXbnE~,swSdm6mQzrHdUAncp0a9cwAjGy8zF2fs"
 maxBitRate = 5120000
 
+def log(msg, force = False):
+	if force:
+		xbmc.log((u'### [' + addonID + u'] - ' + msg).encode('utf-8'), level = xbmc.LOGNOTICE)
+	else:
+		xbmc.log((u'### [' + addonID + u'] - ' + msg).encode('utf-8'), level = xbmc.LOGDEBUG)
+
 def loadPage(url):
-	print "Load: " + url
+	log("Loading url: " + url)
 	req = urllib2.Request(url)
 	req.add_header('User-Agent', 'Mozilla/5.0 (Windows NT 6.1; rv:29.0) Gecko/20100101 Firefox/29.0')
 	response = urllib2.urlopen(req)
@@ -67,6 +73,7 @@ def	getShows(link):
 		for item in search_list:
 			item_title = item.find('a').string
 			item_link = item.find('a')['href']
+			log("Found program: " + item_title)
 			addDirectoryItem(item_title, item_link, "category", "")
 	xbmcplugin.addSortMethod(thisPlugin, xbmcplugin.SORT_METHOD_LABEL)
 	xbmcplugin.endOfDirectory(thisPlugin)
@@ -90,7 +97,6 @@ def getEpisodes(link):
 	episodes_containers_list = soup.findAll('dl', {'class': re.compile(' item item-')})
 	for episode_container in episodes_containers_list:
 		episode_title = episode_container.find('dd',{'class': 'thumbnail'}).find('a')['title']
-		xbmc.log(msg=episode_title)
 		try:
 			episode_number = episode_container.find('dd',{'class': 'description'}).string
 			if episode_number is None:
@@ -112,6 +118,7 @@ def getEpisodes(link):
 			episode_duration = duration_in_seconds
 		except:
 			episode_duration = 0
+		log("Found episode: " + episode_title + episode_number)
 		addLinkItem(episode_title + episode_number, episode_link, "episode", episode_thumbnail, episode_description, episode_duration)
 	if nextPage is not None:
 		parsed_link = urlparse.urlparse(link)
@@ -128,6 +135,7 @@ def watchEpisode(link):
 		for part_container in parts_containers_list:
 			videoID = part_container.find('dd',{'class': 'brightcoveId'}).string
 			vidurl = getBrightCoveLink(videoID)
+			log("Found part. Adding to stack: " + vidurl)
 			url += vidurl.replace(",", ",,") + " , "
 		url = url[:-3]
 	else:
@@ -135,6 +143,7 @@ def watchEpisode(link):
 		url = getBrightCoveLink(videoID)
 		log("Found single url: " + url)
 		playlist.add(vidurl, listitem)
+	log("Playing: " + url)
 	listItem = xbmcgui.ListItem(path=url)
 	xbmcplugin.setResolvedUrl(thisPlugin, True, listItem)
 	xbmc.sleep(4000)
