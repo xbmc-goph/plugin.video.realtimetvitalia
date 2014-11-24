@@ -124,9 +124,20 @@ def getEpisodes(link):
 def watchEpisode(link):
 	page = loadPage(baseUrl + link)
 	soup = BeautifulSoup(page)
-	videoID = soup.find('param', {'name': '@videoPlayer'})['value']
-	vidurl = getBrightCoveLink(videoID)
-	listItem = xbmcgui.ListItem(path=vidurl)
+	parts_containers_list = soup.findAll('li', {'class': re.compile('item item-')})
+	if parts_containers_list and len(parts_containers_list)>0:
+		url = "stack://"
+		for part_container in parts_containers_list:
+			videoID = part_container.find('dd',{'class': 'brightcoveId'}).string
+			vidurl = getBrightCoveLink(videoID)
+			url += vidurl.replace(",", ",,") + " , "
+		url = url[:-3]
+	else:
+		videoID = soup.find('param', {'name': '@videoPlayer'})['value']
+		url = getBrightCoveLink(videoID)
+		log("Found single url: " + url)
+		playlist.add(vidurl, listitem)
+	listItem = xbmcgui.ListItem(path=url)
 	xbmcplugin.setResolvedUrl(thisPlugin, True, listItem)
 	xbmc.sleep(4000)
 	xbmc.executebuiltin('XBMC.PlayerControl(Play)')
